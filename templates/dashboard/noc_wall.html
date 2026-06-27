@@ -1,0 +1,88 @@
+{% extends 'base/app.html' %}
+{% block title %}Bilmad NOC Wall{% endblock %}
+{% block body_class %}wall-mode{% endblock %}
+{% block head_extra %}<meta http-equiv="refresh" content="60">{% endblock %}
+{% block content %}
+<div class="wall-shell">
+  <section class="wall-header">
+    <div class="wall-logo">
+      <div class="wall-logo-mark">BN</div>
+      <div>
+        <div class="wall-title">BILMAD NOC WALL</div>
+        <div class="wall-subtitle">Canlı operasyon ekranı · otomatik yenileme 60 sn</div>
+      </div>
+    </div>
+    <div>
+      <div class="wall-clock" id="clock">--:--:--</div>
+      <div class="wall-date">TV / Monitoring Mode</div>
+    </div>
+  </section>
+
+  <section class="wall-kpi-grid">
+    <div class="wall-kpi"><div class="wall-kpi-icon">🏢</div><div><span>Firma</span><strong>{{ summary.company_count }}</strong><small>aktif müşteri</small></div></div>
+    <div class="wall-kpi"><div class="wall-kpi-icon">🖥️</div><div><span>Cihaz</span><strong>{{ summary.device_count }}</strong><small>toplam varlık</small></div></div>
+    <div class="wall-kpi ok"><div class="wall-kpi-icon">✓</div><div><span>Online</span><strong>{{ summary.online_count }}</strong><small>sağlıklı</small></div></div>
+    <div class="wall-kpi warn"><div class="wall-kpi-icon">!</div><div><span>Uyarı</span><strong>{{ summary.warning_count }}</strong><small>izlenmeli</small></div></div>
+    <div class="wall-kpi danger"><div class="wall-kpi-icon">×</div><div><span>Kritik</span><strong>{{ summary.critical_alert_count }}</strong><small>müdahale</small></div></div>
+    <div class="wall-kpi"><div class="wall-kpi-icon">📍</div><div><span>Lokasyon</span><strong>{{ summary.location_count }}</strong><small>izlenen saha</small></div></div>
+  </section>
+
+  <section class="wall-main-grid">
+    <div class="wall-card big">
+      <h2>Canlı Topoloji Özeti</h2>
+      <div class="topology">
+        <div class="topology-map">
+          <div><span class="node ok">🌍 İnternet / Berqnet</span></div>
+          <div><span class="node ok">🔥 Firewall / SASE</span></div>
+          <div class="branch"><span class="node ok">🌐 Core Switch</span><span class="node warn">📶 AP / Deco</span><span class="node danger">🎥 CCTV</span></div>
+          <div class="branch"><span class="node warn">☁️ ESXi</span><span class="node ok">💾 NAS</span><span class="node danger">💽 Backup</span></div>
+          <div><span class="node ok">🤖 AI Analiz Motoru Hazırlanıyor</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wall-card">
+      <h2>Kritik Olaylar</h2>
+      {% for a in critical_alerts %}
+      <div class="wall-alert {{ a.severity }}"><b>{{ a.company.name }}</b><span>{{ a.title }}</span><em>aktif</em></div>
+      {% empty %}<div class="empty-state">Kritik olay yok.</div>{% endfor %}
+    </div>
+
+    <div class="wall-card">
+      <h2>Sağlık Dağılımı</h2>
+      <div class="donut"><div class="donut-inner">{{ summary.online_count }}/{{ summary.device_count }}</div></div>
+      <div class="bar-row"><label><span>Network</span><b>72%</b></label><div class="bar"><i style="width:72%"></i></div></div>
+      <div class="bar-row"><label><span>Backup</span><b>48%</b></label><div class="bar warn"><i style="width:48%"></i></div></div>
+      <div class="bar-row"><label><span>Security</span><b>61%</b></label><div class="bar"><i style="width:61%"></i></div></div>
+    </div>
+
+    <div class="wall-card">
+      <h2>Firma Sağlığı</h2>
+      <table class="mini-table">
+        {% for c in companies %}
+        <tr><td>{{ c.short_name|default:c.name }}</td><td><span class="badge-status ok">İzleniyor</span></td></tr>
+        {% empty %}<tr><td>Firma yok</td><td>-</td></tr>{% endfor %}
+      </table>
+    </div>
+
+    <div class="wall-card">
+      <h2>Modül Durumu</h2>
+      <table class="mini-table">
+        <tr><td>Berqnet SASE</td><td><span class="badge-status ok">Hazır</span></td></tr>
+        <tr><td>VMware ESXi</td><td><span class="badge-status warn">Sırada</span></td></tr>
+        <tr><td>Narbulut</td><td><span class="badge-status danger">API/Mail</span></td></tr>
+        <tr><td>CCTV / Alarm</td><td><span class="badge-status warn">Workspace</span></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="wall-footer">
+    <div class="marquee">Son olaylar: ESXi datastore %88 · Kamera-Depo-02 offline · Narbulut son yedek başarısız · CCTV partner workspace planlandı</div>
+    <div>Bilmad NOC v0.3.0</div>
+  </section>
+</div>
+<script>
+function tick(){const d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('tr-TR');}
+tick();setInterval(tick,1000);
+</script>
+{% endblock %}

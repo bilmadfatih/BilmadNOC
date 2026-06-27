@@ -1,0 +1,9 @@
+{% extends 'base/app.html' %}
+{% block title %}Firmalar{% endblock %}
+{% block page_title %}Firmalar{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header"><h2>Müşteri Listesi</h2><span>Multi tenant çekirdek</span></div>
+  <table class="table table-dark noc-table"><thead><tr><th>Firma</th><th>Kısa Ad</th><th>Sağlık Skoru</th><th>Aktif</th></tr></thead><tbody>{% for c in companies %}<tr><td>{{ c.name }}</td><td>{{ c.short_name }}</td><td>{{ c.health_score }}</td><td>{{ c.is_active }}</td></tr>{% empty %}<tr><td colspan="4" class="text-secondary">Henüz firma yok.</td></tr>{% endfor %}</tbody></table>
+</div>
+{% endblock %}

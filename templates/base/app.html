@@ -1,0 +1,48 @@
+{% load static %}
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% block head_extra %}{% endblock %}
+  <title>{% block title %}Bilmad NOC{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="{% static 'css/noc.css' %}" rel="stylesheet">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">BN</div>
+      <div>
+        <div class="brand-title">Bilmad NOC</div>
+        <div class="brand-subtitle">Operations Platform</div>
+      </div>
+    </div>
+    <nav class="nav-menu">
+      <a href="/">Dashboard</a>
+      <a href="/noc-wall/">NOC Wall</a>
+      <a href="/security-wall/">CCTV / Alarm Wall</a>
+      <a href="/companies/">Firmalar</a>
+      <a href="/admin/">Admin</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="small text-secondary">v0.3.0 UI Polish</div>
+    </div>
+  </aside>
+  <main class="main-content">
+    <header class="topbar">
+      <div>
+        <div class="page-kicker">{% block page_kicker %}Multi Tenant Monitoring{% endblock %}</div>
+        <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+      </div>
+      <div class="top-actions">
+        <span class="pill danger">Kritik: {{ summary.critical_alert_count|default:0 }}</span>
+        <span class="pill">Aktif Alarm: {{ summary.active_alert_count|default:0 }}</span>
+      </div>
+    </header>
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

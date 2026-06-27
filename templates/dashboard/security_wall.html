@@ -1,0 +1,80 @@
+{% extends 'base/app.html' %}
+{% block title %}CCTV / Alarm Wall{% endblock %}
+{% block body_class %}wall-mode{% endblock %}
+{% block head_extra %}<meta http-equiv="refresh" content="60">{% endblock %}
+{% block content %}
+<div class="security-layout">
+  <section class="wall-header">
+    <div class="wall-logo">
+      <div class="wall-logo-mark">CS</div>
+      <div>
+        <div class="wall-title">CCTV & ALARM OPERASYON WALL</div>
+        <div class="wall-subtitle">Partner erişimi için izole güvenlik çalışma alanı</div>
+      </div>
+    </div>
+    <div>
+      <div class="wall-clock" id="clock">--:--:--</div>
+      <div class="wall-date">CCTV / Alarm Mode</div>
+    </div>
+  </section>
+
+  <section class="wall-kpi-grid">
+    <div class="wall-kpi"><div class="wall-kpi-icon">🎥</div><div><span>Kamera</span><strong>{{ camera_total }}</strong><small>toplam</small></div></div>
+    <div class="wall-kpi danger"><div class="wall-kpi-icon">×</div><div><span>Offline</span><strong>{{ camera_offline }}</strong><small>kamera</small></div></div>
+    <div class="wall-kpi"><div class="wall-kpi-icon">💽</div><div><span>NVR / DVR</span><strong>{{ nvr_total }}</strong><small>kayıt cihazı</small></div></div>
+    <div class="wall-kpi warn"><div class="wall-kpi-icon">🚨</div><div><span>Alarm Panel</span><strong>{{ alarm_panel_total }}</strong><small>Ajax / Hikvision / Dahua</small></div></div>
+    <div class="wall-kpi ok"><div class="wall-kpi-icon">🔐</div><div><span>Partner</span><strong>1</strong><small>workspace</small></div></div>
+    <div class="wall-kpi"><div class="wall-kpi-icon">📊</div><div><span>Olay</span><strong>{{ security_alerts|length }}</strong><small>aktif</small></div></div>
+  </section>
+
+  <section class="security-main">
+    <div class="wall-card big">
+      <h2>Kamera Durum Matrisi</h2>
+      <div class="camera-grid">
+        <div class="camera-tile ok"><b>Kamera-01</b><span>Online · kayıt var</span></div>
+        <div class="camera-tile ok"><b>Kamera-02</b><span>Online · kayıt var</span></div>
+        <div class="camera-tile danger"><b>Kamera-Depo-02</b><span>Offline · kontrol edilmeli</span></div>
+        <div class="camera-tile ok"><b>Kamera-04</b><span>Online · kayıt var</span></div>
+        <div class="camera-tile ok"><b>NVR-01</b><span>HDD %72</span></div>
+        <div class="camera-tile danger"><b>NVR-Depo</b><span>Disk uyarısı</span></div>
+        <div class="camera-tile ok"><b>AX PRO</b><span>Panel online</span></div>
+        <div class="camera-tile ok"><b>Dahua Alarm</b><span>Panel online</span></div>
+      </div>
+    </div>
+
+    <div class="wall-card">
+      <h2>Aktif Güvenlik Alarmları</h2>
+      {% for a in security_alerts %}
+      <div class="wall-alert {{ a.severity }}"><b>{{ a.company.name }}</b><span>{{ a.title }}</span><em>aktif</em></div>
+      {% empty %}<div class="empty-state">Aktif CCTV/alarm olayı yok.</div>{% endfor %}
+    </div>
+
+    <div class="wall-card">
+      <h2>Alarm Sistemleri</h2>
+      <div class="sensor-list">
+        <div class="sensor-item"><b>Ajax Hub</b><span class="badge-status ok">Online</span></div>
+        <div class="sensor-item"><b>Hikvision AX PRO</b><span class="badge-status warn">İzleme Planlandı</span></div>
+        <div class="sensor-item"><b>Dahua Alarm</b><span class="badge-status warn">İzleme Planlandı</span></div>
+      </div>
+    </div>
+
+    <div class="wall-card">
+      <h2>Kayıt Sağlığı</h2>
+      <div class="bar-row"><label><span>NVR-01 HDD</span><b>72%</b></label><div class="bar"><i style="width:72%"></i></div></div>
+      <div class="bar-row"><label><span>NVR-Depo HDD</span><b>91%</b></label><div class="bar danger"><i style="width:91%"></i></div></div>
+      <div class="bar-row"><label><span>Kayıt Gün Sayısı</span><b>28 gün</b></label><div class="bar"><i style="width:70%"></i></div></div>
+    </div>
+
+    <div class="wall-card">
+      <h2>Partner Yetki Notu</h2>
+      <div class="status-line ok">Partner sadece CCTV / Alarm workspace görecek</div>
+      <div class="status-line">VMware, Berqnet, 365 gizli kalacak</div>
+      <div class="status-line">Lokasyon bazlı yetki eklenecek</div>
+    </div>
+  </section>
+</div>
+<script>
+function tick(){const d=new Date();document.getElementById('clock').textContent=d.toLocaleTimeString('tr-TR');}
+tick();setInterval(tick,1000);
+</script>
+{% endblock %}
