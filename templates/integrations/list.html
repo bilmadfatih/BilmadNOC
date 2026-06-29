@@ -1,0 +1,20 @@
+{% extends 'base/app.html' %}
+{% block title %}Integrations{% endblock %}
+{% block page_kicker %}Plugin Marketplace{% endblock %}
+{% block page_title %}Entegrasyon Merkezi{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="panel-header"><h2>Entegrasyonlar</h2><span>Berqnet, Bitdefender, VMware, M365 ve diğerleri</span></div>
+  <div class="row g-3">
+    {% for integration in integrations %}
+    <div class="col-md-6 col-xl-4">
+      <div class="integration-card h-100">
+        <strong>{{ integration.name }}</strong>
+        <small>{{ integration.company.name }} · {{ integration.get_integration_type_display }}</small>
+        <div class="mt-2"><span class="status-badge status-{{ integration.status }}">{{ integration.get_status_display }}</span></div>
+      </div>
+    </div>
+    {% empty %}<div class="text-secondary">Henüz entegrasyon yok.</div>{% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -3,11 +3,11 @@
 {% block page_title %}Genel Operasyon Dashboard{% endblock %}
 {% block content %}
 <section class="metric-grid">
-  <div class="metric-card"><span>Firmalar</span><strong>{{ summary.company_count }}</strong><small>Aktif müşteri</small></div>
-  <div class="metric-card"><span>Cihazlar</span><strong>{{ summary.device_count }}</strong><small>Toplam varlık</small></div>
-  <div class="metric-card ok"><span>Online</span><strong>{{ summary.online_count }}</strong><small>Sağlıklı</small></div>
-  <div class="metric-card warn"><span>Uyarı</span><strong>{{ summary.warning_count }}</strong><small>İzlenmeli</small></div>
-  <div class="metric-card danger"><span>Kritik / Offline</span><strong>{{ summary.critical_count|add:summary.offline_count }}</strong><small>Müdahale gerekebilir</small></div>
+  <a class="metric-card metric-link" href="/companies/"><span>Firmalar</span><strong>{{ summary.company_count }}</strong><small>Aktif müşteri</small></a>
+  <a class="metric-card metric-link" href="/assets/"><span>Cihazlar</span><strong>{{ summary.device_count }}</strong><small>{{ summary.check_count }} aktif check</small></a>
+  <a class="metric-card metric-link ok" href="/assets/?status=online"><span>Online</span><strong>{{ summary.online_count }}</strong><small>Sağlıklı</small></a>
+  <a class="metric-card metric-link warn" href="/assets/?status=warning"><span>Uyarı</span><strong>{{ summary.warning_count }}</strong><small>İzlenmeli</small></a>
+  <a class="metric-card metric-link danger" href="/assets/?status=offline"><span>Kritik / Offline</span><strong>{{ summary.critical_count|add:summary.offline_count }}</strong><small>Son kontrol: {{ summary.last_check_at|date:'H:i:s'|default:'Yok' }}</small></a>
 </section>
 
 <section class="dashboard-grid mt-4">
@@ -18,8 +18,8 @@
         <thead><tr><th>Firma</th><th>Cihaz</th><th>Alarm</th><th>Kritik</th><th>Offline</th><th>Skor</th></tr></thead>
         <tbody>
         {% for c in company_rows %}
-          <tr>
-            <td>{{ c.name }}</td><td>{{ c.total_devices }}</td><td>{{ c.active_alerts }}</td>
+          <tr class="dashboard-click-row" onclick="window.location='/companies/{{ c.id }}/'">
+            <td class="fw-bold">{{ c.name }}</td><td>{{ c.total_devices }}</td><td>{{ c.active_alerts }}</td>
             <td>{{ c.critical_devices }}</td><td>{{ c.offline_devices }}</td><td><span class="score">{{ c.health_score }}</span></td>
           </tr>
         {% empty %}
@@ -33,8 +33,19 @@
     <div class="panel-header"><h2>Canlı Alarmlar</h2><span>Çözülmemiş</span></div>
     <div class="event-list">
       {% for a in recent_alerts %}
-        <div class="event {{ a.severity }}"><strong>{{ a.title }}</strong><span>{{ a.company.name }}{% if a.device %} / {{ a.device.name }}{% endif %}</span></div>
+        <div class="event {{ a.severity }}"><strong>{{ a.title }}</strong><span>{{ a.company.name }}{% if a.device %} / {{ a.device.name }}{% endif %} · {{ a.created_at|date:'H:i:s' }}</span></div>
       {% empty %}<div class="empty-state">Aktif alarm yok.</div>{% endfor %}
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h2>Son Monitoring</h2><span>Ping / HTTP / TCP</span></div>
+    <div class="event-list">
+      {% for r in latest_checks %}
+        <a class="event event-link {% if not r.success %}critical{% endif %}" href="/assets/{{ r.device.id }}/">
+          <strong>{{ r.device.name }} · {{ r.monitoring_check.get_check_type_display }}</strong>
+          <span>{% if r.success %}OK{% else %}FAIL{% endif %} · {{ r.response_time_ms|default:'-' }} ms · {{ r.checked_at|date:'H:i:s' }}</span>
+        </a>
+      {% empty %}<div class="empty-state">Henüz monitoring sonucu yok. Asset detayından “Şimdi Kontrol Et” çalıştırabilirsin.</div>{% endfor %}
     </div>
   </div>
   <div class="panel">
@@ -44,10 +55,6 @@
         <div class="event"><strong>{{ i.get_integration_type_display }}</strong><span>{{ i.company.name }} - {{ i.get_status_display }}</span></div>
       {% empty %}<div class="empty-state">Henüz entegrasyon tanımı yok.</div>{% endfor %}
     </div>
-  </div>
-  <div class="panel ai-panel">
-    <div class="panel-header"><h2>AI Asistan Hazırlığı</h2><span>v0.3</span></div>
-    <p>Sonraki sprintlerde AI Asistan; Berqnet, VMware, Narbulut, CCTV, Alarm, Sensway, Bitdefender ve Microsoft 365 verilerini aynı olay modeli üzerinden yorumlayacak.</p>
   </div>
 </section>
 {% endblock %}

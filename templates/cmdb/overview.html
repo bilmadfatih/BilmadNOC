@@ -1,0 +1,90 @@
+{% extends 'base/app.html' %}
+{% load i18n %}
+{% block title %}{% trans "CMDB" %}{% endblock %}
+{% block page_kicker %}{% trans "Configuration Management Database" %}{% endblock %}
+{% block page_title %}{% trans "CMDB" %}{% endblock %}
+{% block content %}
+<section class="metric-grid">
+  <div class="metric-card"><span>{% trans "Services" %}</span><strong>{{ service_count }}</strong><small>{% trans "Business services" %}</small></div>
+  <div class="metric-card"><span>{% trans "Applications" %}</span><strong>{{ application_count }}</strong><small>{% trans "Tracked applications" %}</small></div>
+  <div class="metric-card"><span>{% trans "Relationships" %}</span><strong>{{ relationship_count }}</strong><small>{% trans "Asset dependencies" %}</small></div>
+  <div class="metric-card"><span>{% trans "Backup Jobs" %}</span><strong>{{ backup_job_count }}</strong><small>{% trans "Protected assets" %}</small></div>
+</section>
+
+<section class="dashboard-grid mt-4">
+  <div class="panel panel-wide">
+    <div class="panel-header">
+      <h2>{% trans "Business Services" %}</h2>
+      <span>{% trans "CMDB service map" %}</span>
+    </div>
+    {% if not services %}
+      <div class="empty-state text-start">
+        <strong>{% trans "No CMDB service yet." %}</strong><br>
+        <span>{% trans "Create a demo map from existing assets:" %}</span>
+        <code class="d-block mt-2">python manage.py seed_cmdb_demo</code>
+      </div>
+    {% else %}
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle noc-table">
+        <thead>
+          <tr>
+            <th>{% trans "Service" %}</th>
+            <th>{% trans "Customer" %}</th>
+            <th>{% trans "Criticality" %}</th>
+            <th>{% trans "Dependencies" %}</th>
+            <th>{% trans "Owner" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for s in services %}
+          <tr>
+            <td class="fw-bold">{{ s.name }}</td>
+            <td>{{ s.company.name }}</td>
+            <td><span class="badge bg-{% if s.criticality == 'critical' %}danger{% elif s.criticality == 'high' %}warning{% else %}secondary{% endif %}">{{ s.get_criticality_display }}</span></td>
+            <td>{{ s.dependencies.count }}</td>
+            <td>{{ s.owner|default:'-' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h2>{% trans "Recent Relationships" %}</h2><span>{% trans "Root cause foundation" %}</span></div>
+    <div class="event-list">
+      {% for r in relationships %}
+        <div class="event"><strong>{{ r.source.name }} → {{ r.target.name }}</strong><span>{{ r.get_relationship_type_display }} · {% trans "Impact" %}: {{ r.impact_weight }}</span></div>
+      {% empty %}<div class="empty-state">{% trans "No asset relationship yet." %}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="dashboard-grid mt-4">
+  <div class="panel">
+    <div class="panel-header"><h2>{% trans "Applications" %}</h2><span>{% trans "Business application layer" %}</span></div>
+    <div class="event-list">
+      {% for app in applications %}
+        <div class="event"><strong>{{ app.name }}</strong><span>{{ app.company.name }} · {{ app.service.name|default:'-' }} · {{ app.primary_device.name|default:'-' }}</span></div>
+      {% empty %}<div class="empty-state">{% trans "No application yet." %}</div>{% endfor %}
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h2>{% trans "Service Dependencies" %}</h2><span>{% trans "Impact analysis base" %}</span></div>
+    <div class="event-list">
+      {% for dep in dependencies %}
+        <div class="event"><strong>{{ dep.service.name }}</strong><span>{{ dep.asset.name }} · {% trans "Impact" %}: {{ dep.impact_weight }}</span></div>
+      {% empty %}<div class="empty-state">{% trans "No dependency yet." %}</div>{% endfor %}
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><h2>{% trans "Backup Jobs" %}</h2><span>{% trans "Protected asset map" %}</span></div>
+    <div class="event-list">
+      {% for job in backup_jobs %}
+        <div class="event"><strong>{{ job.name }}</strong><span>{{ job.company.name }} · {{ job.provider|default:'-' }} · {{ job.protected_assets.count }} {% trans "assets" %}</span></div>
+      {% empty %}<div class="empty-state">{% trans "No backup job yet." %}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

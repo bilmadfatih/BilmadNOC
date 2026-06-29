@@ -1,0 +1,36 @@
+{% extends 'base/app.html' %}
+{% block title %}{{ company.name }}{% endblock %}
+{% block page_kicker %}Customer360{% endblock %}
+{% block page_title %}{{ company.name }}{% endblock %}
+{% block content %}
+<div class="metrics-grid mb-4">
+  <div class="metric-card"><span>Sağlık Skoru</span><strong>{{ company.health_score }}</strong><small>Genel müşteri skoru</small></div>
+  <div class="metric-card"><span>Asset</span><strong>{{ asset_count }}</strong><small>Toplam cihaz</small></div>
+  <div class="metric-card"><span>Aktif Alarm</span><strong class="text-warning">{{ active_alert_count }}</strong><small>Çözümlenmemiş</small></div>
+  <div class="metric-card"><span>Kritik / Offline</span><strong class="text-danger">{{ critical_count|add:offline_count }}</strong><small>Müdahale gerekebilir</small></div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="panel mb-4">
+      <div class="panel-header"><h2>Assetler</h2><span>Customer360 varlık görünümü</span></div>
+      <table class="table table-dark noc-table"><thead><tr><th>Asset</th><th>Tip</th><th>IP</th><th>Durum</th></tr></thead><tbody>
+        {% for asset in assets %}<tr><td><a class="text-light fw-bold" href="/assets/{{ asset.id }}/">{{ asset.name }}</a></td><td>{{ asset.get_device_type_display }}</td><td>{{ asset.ip_address|default:'-' }}</td><td><span class="status-badge status-{{ asset.status }}">{{ asset.get_status_display }}</span></td></tr>{% empty %}<tr><td colspan="4" class="text-secondary">Asset yok.</td></tr>{% endfor %}
+      </tbody></table>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><h2>Alarmlar</h2><span>Son müşteri alarmları</span></div>
+      {% for alert in alerts %}<div class="alarm-item {% if alert.severity == 'critical' %}critical{% else %}warning{% endif %}"><strong>{{ alert.title }}</strong><small>{{ alert.device.name|default:'Genel' }} · {{ alert.created_at }}</small></div>{% empty %}<div class="text-secondary">Aktif alarm yok.</div>{% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel mb-4">
+      <div class="panel-header"><h2>Lokasyonlar</h2><span>Şube / merkez</span></div>
+      {% for location in locations %}<div class="integration-card"><strong>{{ location.name }}</strong><small>{{ location.address|default:'Adres yok' }}</small></div>{% empty %}<div class="text-secondary">Lokasyon yok.</div>{% endfor %}
+    </div>
+    <div class="panel">
+      <div class="panel-header"><h2>Entegrasyonlar</h2><span>Müşteri bağlı servisleri</span></div>
+      {% for integration in integrations %}<div class="integration-card"><strong>{{ integration.name }}</strong><small>{{ integration.get_status_display }}</small></div>{% empty %}<div class="text-secondary">Entegrasyon yok.</div>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

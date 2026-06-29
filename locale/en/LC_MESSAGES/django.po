@@ -1,0 +1,106 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Bilmad NOC\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Operasyon Platformu"
+msgstr "Operations Platform"
+
+msgid "Ana Panel"
+msgstr "Dashboard"
+
+msgid "Operasyon Merkezi"
+msgstr "Mission Control"
+
+msgid "Varlıklar"
+msgstr "Assets"
+
+msgid "CCTV / Alarm Duvarı"
+msgstr "CCTV / Alarm Wall"
+
+msgid "Müşteriler"
+msgstr "Customers"
+
+msgid "Entegrasyonlar"
+msgstr "Integrations"
+
+msgid "Yönetim"
+msgstr "Administration"
+
+msgid "Çok Kiracılı İzleme"
+msgstr "Multi Tenant Monitoring"
+
+msgid "Dil"
+msgstr "Language"
+
+msgid "Dil seçimi"
+msgstr "Language selection"
+
+msgid "Kritik"
+msgstr "Critical"
+
+msgid "Aktif Alarm"
+msgstr "Active Alerts"
+
+msgid "CMDB"
+msgstr "CMDB"
+
+msgid "Configuration Management Database"
+msgstr "Configuration Management Database"
+
+msgid "Services"
+msgstr "Services"
+
+msgid "Business services"
+msgstr "Business services"
+
+msgid "Applications"
+msgstr "Applications"
+
+msgid "Tracked applications"
+msgstr "Tracked applications"
+
+msgid "Relationships"
+msgstr "Relationships"
+
+msgid "Asset dependencies"
+msgstr "Asset dependencies"
+
+msgid "Backup Jobs"
+msgstr "Backup Jobs"
+
+msgid "Protected assets"
+msgstr "Protected assets"
+
+msgid "Business Services"
+msgstr "Business Services"
+
+msgid "CMDB service map"
+msgstr "CMDB service map"
+
+msgid "Service"
+msgstr "Service"
+
+msgid "Customer"
+msgstr "Customer"
+
+msgid "Criticality"
+msgstr "Criticality"
+
+msgid "Owner"
+msgstr "Owner"
+
+msgid "No business service yet. You can add one from the admin panel."
+msgstr "No business service yet. You can add one from the admin panel."
+
+msgid "Recent Relationships"
+msgstr "Recent Relationships"
+
+msgid "Root cause foundation"
+msgstr "Root cause foundation"
+
+msgid "No asset relationship yet."
+msgstr "No asset relationship yet."

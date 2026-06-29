@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     'core',
     'monitoring',
     'integrations',
+    'discovery',
 ]
 
 MIDDLEWARE = [
@@ -53,7 +54,11 @@ DATABASES = {
     }
 }
 
-LANGUAGE_CODE = 'tr-tr'
+LANGUAGE_CODE = 'tr'
+LANGUAGES = [
+    ('tr', 'Türkçe'),
+    ('en', 'English'),
+]
 TIME_ZONE = 'Europe/Istanbul'
 USE_I18N = True
 USE_TZ = True

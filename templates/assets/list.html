@@ -1,0 +1,89 @@
+{% extends 'base/app.html' %}
+{% block title %}Assets{% endblock %}
+{% block page_kicker %}Asset Engine · Monitoring Core{% endblock %}
+{% block page_title %}Assets{% endblock %}
+{% block content %}
+<div class="metrics-grid mb-4">
+  <a class="metric-card metric-link" href="/assets/"><span>Toplam Asset</span><strong>{{ summary.device_count }}</strong><small>Envanterdeki cihaz</small></a>
+  <a class="metric-card metric-link ok" href="/assets/?status=online"><span>Online</span><strong class="text-success">{{ summary.online_count }}</strong><small>Sağlıklı</small></a>
+  <a class="metric-card metric-link warn" href="/assets/?status=warning"><span>Warning</span><strong class="text-warning">{{ summary.warning_count }}</strong><small>İzlenmeli</small></a>
+  <a class="metric-card metric-link danger" href="/assets/?status=offline"><span>Kritik / Offline</span><strong class="text-danger">{{ summary.critical_count|add:summary.offline_count }}</strong><small>Müdahale gerekli</small></a>
+</div>
+
+<div class="panel mb-4">
+  <div class="panel-header">
+    <div>
+      <h2>Asset Envanteri</h2>
+      <span>Satıra tıkla, asset detail ekranına git. Filtreler 21-24 inch ekranda compact çalışır.</span>
+    </div>
+    <span>Son güncelleme: {{ summary.last_check_at|date:'H:i:s'|default:'Henüz yok' }}</span>
+  </div>
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-4"><input class="form-control form-control-sm bg-dark text-light border-secondary" name="q" value="{{ q }}" placeholder="Asset adı, IP, hostname, marka ara"></div>
+    <div class="col-md-3">
+      <select class="form-select form-select-sm bg-dark text-light border-secondary" name="status">
+        <option value="">Tüm durumlar</option>
+        {% for value,label in status_choices %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select class="form-select form-select-sm bg-dark text-light border-secondary" name="type">
+        <option value="">Tüm tipler</option>
+        {% for value,label in type_choices %}<option value="{{ value }}" {% if device_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-sm btn-outline-info w-100">Filtrele</button></div>
+  </form>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle noc-table asset-table">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Firma</th>
+          <th>Lokasyon</th>
+          <th>Tip</th>
+          <th>IP</th>
+          <th>Durum</th>
+          <th>Son Kontrol</th>
+          <th>Health</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for asset in assets %}
+        <tr class="clickable-row" data-href="/assets/{{ asset.id }}/">
+          <td>
+            <div class="asset-cell">
+              <span class="device-icon status-ring-{{ asset.status }}">{{ asset.device_icon }}</span>
+              <div>
+                <strong>{{ asset.name }}</strong>
+                <small>{{ asset.hostname|default:'-' }}</small>
+              </div>
+            </div>
+          </td>
+          <td>{{ asset.company.name }}</td>
+          <td>{{ asset.location.name|default:'-' }}</td>
+          <td>{{ asset.get_device_type_display }}</td>
+          <td>{{ asset.ip_address|default:'-' }}</td>
+          <td><span class="status-badge status-{{ asset.status }}">{{ asset.get_status_display }}</span></td>
+          <td>{% if asset.last_checked_at %}<span class="last-check">{{ asset.last_checked_at|date:'H:i:s' }}<small>{{ asset.last_checked_at|date:'d.m.Y' }}</small></span>{% else %}<span class="text-secondary">Henüz yok</span>{% endif %}</td>
+          <td>
+            <span class="health-pill health-{{ asset.health_class }}">{{ asset.health_score }}</span>
+            {% if asset.health_reasons %}<small class="d-block text-secondary mt-1">{{ asset.health_reasons.0 }}</small>{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="text-center text-secondary py-4">Kayıt bulunamadı.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+document.querySelectorAll('.clickable-row').forEach(function(row){
+  row.addEventListener('click', function(event){
+    if (event.target.closest('a, button, input, select')) return;
+    window.location.href = row.dataset.href;
+  });
+});
+</script>
+{% endblock %}

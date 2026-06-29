@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4 px-3">
+  <div class="mb-4">
+    <h2 class="fw-bold mb-0">{{ customer.name }} 360</h2>
+    <div class="text-muted">Müşteri tüm varlık ve sağlık özeti</div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">Toplam Asset</div><h3>{{ asset_count }}</h3></div></div></div>
+    <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">Online</div><h3 class="text-success">{{ online_count }}</h3></div></div></div>
+    <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">Warning/Critical</div><h3 class="text-warning">{{ warning_count }} / {{ critical_count }}</h3></div></div></div>
+    <div class="col-md-3"><div class="card metric-card"><div class="card-body"><div class="text-muted">Offline</div><h3 class="text-danger">{{ offline_count }}</h3></div></div></div>
+  </div>
+
+  <div class="card metric-card">
+    <div class="card-header bg-white fw-bold">Asset Listesi</div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Ad</th><th>Tip</th><th>IP</th><th>Site</th><th>Üretici</th><th>Durum</th></tr></thead>
+        <tbody>
+          {% for asset in assets %}
+          <tr>
+            <td>{{ asset.name }}</td>
+            <td>{{ asset.get_asset_type_display }}</td>
+            <td>{{ asset.ip_address|default:"-" }}</td>
+            <td>{{ asset.site|default:"-" }}</td>
+            <td>{{ asset.manufacturer|default:"-" }}</td>
+            <td><span class="badge bg-dark">{{ asset.get_status_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center text-muted py-4">Bu müşteriye bağlı asset yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends 'base/app.html' %}
+{% block title %}{{ asset.name }}{% endblock %}
+{% block page_kicker %}Asset Detail · Monitoring Timeline{% endblock %}
+{% block page_title %}{{ asset.name }}{% endblock %}
+{% block content %}
+<div class="asset-header panel mb-3">
+  <div class="asset-title-wrap">
+    <div class="asset-icon status-ring-{{ asset.status }}">{{ asset_icon }}</div>
+    <div>
+      <div class="asset-title-line">
+        <h2>{{ asset.name }}</h2>
+        <span class="status-badge status-{{ asset.status }}">{{ asset.get_status_display }}</span>
+        {% if asset.is_critical %}<span class="status-badge status-critical">Kritik Asset</span>{% endif %}
+      </div>
+      <div class="asset-subtitle">
+        {{ asset.company.name }}{% if asset.location %} · {{ asset.location.name }}{% endif %} · {{ asset.get_device_type_display }}
+      </div>
+    </div>
+  </div>
+  <div class="asset-actions">
+    <a class="btn btn-sm btn-outline-light" href="/assets/">Assets</a>
+    <form method="post" action="/assets/{{ asset.id }}/run-checks/" class="m-0">
+      {% csrf_token %}
+      <button class="btn btn-sm btn-info">Şimdi Kontrol Et</button>
+    </form>
+  </div>
+</div>
+
+<div class="metrics-grid mb-3">
+  <div class="metric-card">
+    <span>Health Score</span>
+    <strong class="{% if health_score >= 85 %}text-success{% elif health_score >= 65 %}text-warning{% else %}text-danger{% endif %}">{{ health_score }}</strong>
+    <small>{% if health_reasons %}{{ health_reasons|join:', ' }}{% else %}Sağlıklı{% endif %}</small>
+  </div>
+  <div class="metric-card">
+    <span>Uptime / Başarı</span>
+    <strong style="font-size:24px">{{ result_stats.uptime|default:'-' }}{% if result_stats.uptime %}%{% endif %}</strong>
+    <small>{{ result_stats.ok }} OK · {{ result_stats.fail }} Fail · son {{ result_stats.total }} kayıt</small>
+  </div>
+  <div class="metric-card">
+    <span>Ortalama Yanıt</span>
+    <strong style="font-size:24px">{{ result_stats.avg_ms|default:'-' }} ms</strong>
+    <small>Ping / HTTP / TCP son ölçümler</small>
+  </div>
+  <div class="metric-card">
+    <span>Son Kontrol</span>
+    <strong style="font-size:18px">{{ asset.last_checked_at|date:'H:i:s'|default:'-' }}</strong>
+    <small>{{ asset.last_checked_at|date:'d.m.Y'|default:'Henüz yok' }}</small>
+  </div>
+</div>
+
+<div class="asset-tabs mb-3">
+  <a href="#overview">Overview</a>
+  <a href="#monitoring">Monitoring</a>
+  <a href="#timeline">Timeline</a>
+  <a href="#performance">Performance</a>
+  <a href="#alerts">Alerts</a>
+  <a href="#metrics">Metrics</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-xl-8">
+    <div id="overview" class="panel mb-3">
+      <div class="panel-header">
+        <div><h2>Overview</h2><span>Asset genel durum ve son kontrol özeti</span></div>
+        {% if latest_result %}
+          <span class="mini-kpi {% if latest_result.success %}monitor-result-ok{% else %}monitor-result-fail{% endif %}">
+            {% if latest_result.success %}OK{% else %}FAIL{% endif %} · {{ latest_result.response_time_ms|default:'-' }} ms
+          </span>
+        {% endif %}
+      </div>
+      <div class="health-reason-strip mb-3">
+        {% for reason in health_reasons %}<span>{{ reason }}</span>{% empty %}<span class="ok">Health Engine temiz: aktif problem yok</span>{% endfor %}
+      </div>
+      <div class="asset-overview-grid">
+        <div><small>Firma</small><strong>{{ asset.company.name }}</strong></div>
+        <div><small>Lokasyon</small><strong>{{ asset.location.name|default:'-' }}</strong></div>
+        <div><small>Tip</small><strong>{{ asset.get_device_type_display }}</strong></div>
+        <div><small>IP / Hostname</small><strong>{{ asset.ip_address|default:'-' }} / {{ asset.hostname|default:'-' }}</strong></div>
+        <div><small>Marka / Model</small><strong>{{ asset.vendor|default:'-' }} {{ asset.model|default:'' }}</strong></div>
+        <div><small>Açık Alarm</small><strong>{{ open_alert_count }}</strong></div>
+      </div>
+      {% if asset.last_error %}<div class="asset-error mt-3">{{ asset.last_error }}</div>{% endif %}
+    </div>
+
+    <div id="monitoring" class="panel mb-3">
+      <div class="panel-header">
+        <div><h2>Monitoring Checks</h2><span>Ping / HTTP / TCP plugin durumları</span></div>
+        <span>{{ checks|length }} check</span>
+      </div>
+      <div class="plugin-grid">
+      {% for item in plugin_summary %}
+        <div class="plugin-card {% if item.last_result and item.last_result.success %}ok{% elif item.last_result %}fail{% endif %}">
+          <div class="plugin-card-title">
+            <strong>{{ item.check.name|default:item.check.get_check_type_display }}</strong>
+            <span>{{ item.check.get_check_type_display }}</span>
+          </div>
+          <div class="plugin-card-body">
+            <small>Hedef</small><b>{{ item.check.effective_target|default:'-' }}{% if item.check.port %}:{{ item.check.port }}{% endif %}</b>
+          </div>
+          <div class="plugin-card-footer">
+            {% if item.last_result %}
+              <span>{% if item.last_result.success %}OK{% else %}FAIL{% endif %}</span>
+              <em>{{ item.last_result.response_time_ms|default:'-' }} ms</em>
+            {% else %}
+              <span>Bekliyor</span><em>-</em>
+            {% endif %}
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty-state">Bu asset için check yok.</div>
+      {% endfor %}
+      </div>
+    </div>
+
+    <div id="timeline" class="panel mb-3">
+      <div class="panel-header"><h2>Monitoring Timeline</h2><span>Son {{ latest_results_count }} kontrol sonucu</span></div>
+      <div class="sparkline-strip mb-3">
+        {% for result in recent_success %}<span class="spark {% if result.success %}ok{% else %}fail{% endif %}" title="{{ result.checked_at|date:'H:i:s' }} - {{ result.message }}"></span>{% empty %}<span class="text-secondary">Henüz timeline yok.</span>{% endfor %}
+      </div>
+      <div class="monitoring-timeline">
+        {% for result in latest_results %}
+          <div class="timeline-row {% if result.success %}ok{% else %}fail{% endif %}">
+            <div class="timeline-time">{{ result.checked_at|date:'H:i:s' }}<small>{{ result.checked_at|date:'d.m.Y' }}</small></div>
+            <div class="timeline-body"><strong>{{ result.monitoring_check.get_check_type_display }}</strong><span>{{ result.message }}</span></div>
+            <div class="timeline-ms">{{ result.response_time_ms|default:'-' }} ms</div>
+          </div>
+        {% empty %}
+          <div class="empty-state">Henüz kontrol sonucu yok. Sağ üstten “Şimdi Kontrol Et” çalıştır.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div id="performance" class="panel mb-3">
+      <div class="panel-header"><h2>Performance Preview</h2><span>Şimdilik response-time temeli, sonra CPU/RAM/SNMP eklenecek</span></div>
+      <div class="perf-grid">
+        <div class="perf-card"><small>Son Başarı Oranı</small><strong>{{ result_stats.uptime|default:'-' }}{% if result_stats.uptime %}%{% endif %}</strong><div class="perf-bar"><i style="width:{{ result_stats.uptime|default:0 }}%"></i></div></div>
+        <div class="perf-card"><small>Ortalama Yanıt</small><strong>{{ result_stats.avg_ms|default:'-' }} ms</strong><div class="perf-bar warn"><i style="width:{% if result_stats.avg_ms %}{% widthratio result_stats.avg_ms 500 100 %}{% else %}0{% endif %}%"></i></div></div>
+        <div class="perf-card"><small>Aktif Alarm</small><strong>{{ open_alert_count }}</strong><div class="perf-bar danger"><i style="width:{% if open_alert_count %}100{% else %}0{% endif %}%"></i></div></div>
+      </div>
+    </div>
+
+    <div id="metrics" class="panel">
+      <div class="panel-header"><h2>Metric Timeline</h2><span>Son toplanan metrikler</span></div>
+      <table class="table table-dark noc-table">
+        <thead><tr><th>Metrik</th><th>Değer</th><th>Birim</th><th>Zaman</th></tr></thead>
+        <tbody>
+          {% for metric in metrics %}
+            <tr><td>{{ metric.name }}</td><td>{{ metric.value|default:'-' }}</td><td>{{ metric.unit }}</td><td>{{ metric.collected_at }}</td></tr>
+          {% empty %}<tr><td colspan="4" class="text-secondary">Henüz metrik yok.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="panel mb-3 sticky-side-card">
+      <div class="panel-header"><h2>Asset Info</h2><span>Sabit bilgi kartı</span></div>
+      <div class="info-list">
+        <div><span>IP</span><strong>{{ asset.ip_address|default:'-' }}</strong></div>
+        <div><span>Hostname</span><strong>{{ asset.hostname|default:'-' }}</strong></div>
+        <div><span>Vendor</span><strong>{{ asset.vendor|default:'-' }}</strong></div>
+        <div><span>Model</span><strong>{{ asset.model|default:'-' }}</strong></div>
+        <div><span>Type</span><strong>{{ asset.get_device_type_display }}</strong></div>
+        <div><span>Location</span><strong>{{ asset.location.name|default:'-' }}</strong></div>
+        <div><span>Customer</span><strong><a class="text-info text-decoration-none" href="/companies/{{ asset.company.id }}/">{{ asset.company.name }}</a></strong></div>
+        <div><span>Last Seen</span><strong>{{ asset.last_checked_at|date:'d.m.Y H:i'|default:'-' }}</strong></div>
+        <div><span>Health</span><strong>{{ health_score }}/100</strong></div>
+      </div>
+    </div>
+
+    <div id="alerts" class="panel">
+      <div class="panel-header"><h2>Alarm History</h2><span>Bu asset için açık alarmlar</span></div>
+      {% for alert in alerts %}
+        <div class="alarm-item {% if alert.severity == 'critical' %}critical{% else %}warning{% endif %}"><strong>{{ alert.title }}</strong><small>{{ alert.created_at|date:'d.m.Y H:i:s' }} · {{ alert.message|default:'Açıklama yok' }}</small></div>
+      {% empty %}<div class="empty-state">Açık alarm yok.</div>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

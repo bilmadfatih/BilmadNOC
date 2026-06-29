@@ -1,0 +1,86 @@
+{% extends 'base/app.html' %}
+{% block title %}Keşif Merkezi{% endblock %}
+{% block page_title %}Keşif Merkezi{% endblock %}
+{% block page_kicker %}Discovery Engine{% endblock %}
+{% block content %}
+{% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}<div class="alert alert-info py-2">{{ message }}</div>{% endfor %}
+  </div>
+{% endif %}
+
+<section class="dashboard-grid">
+  <div class="panel panel-wide">
+    <div class="panel-header">
+      <div>
+        <h2>Yeni Ağ Taraması</h2>
+        <span>Müşteri lokasyonunda IP aralığı tara, bulunan cihazları varlık listesine aktar.</span>
+      </div>
+      <span class="badge-status ok">Sprint 3.2</span>
+    </div>
+
+    <form method="post" class="noc-form">
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">{{ form.company.label }}</label>
+          {{ form.company }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">{{ form.location.label }}</label>
+          {{ form.location }}
+        </div>
+        <div class="col-md-8">
+          <label class="form-label">{{ form.cidr.label }}</label>
+          {{ form.cidr }}
+          <div class="form-text text-secondary">{{ form.cidr.help_text }}</div>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <div class="form-check mb-2">
+            {{ form.scan_tcp }}
+            <label class="form-check-label">{{ form.scan_tcp.label }}</label>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-end gap-2 mt-4">
+        <button type="submit" class="bds-btn primary">Taramayı Başlat</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header"><h2>Keşif Akışı</h2><span>Ürün workflow</span></div>
+    <div class="event-list">
+      <div class="event"><strong>1. Müşteri / Lokasyon</strong><span>Tarama hangi müşteri altında çalışacak?</span></div>
+      <div class="event"><strong>2. IP Aralığı</strong><span>Örn: 192.168.7.0/24</span></div>
+      <div class="event"><strong>3. Akıllı Tanıma</strong><span>Açık portlara göre cihaz tipi önerilir.</span></div>
+      <div class="event"><strong>4. Varlığa Aktar</strong><span>Seçilen hostlar cihaz listesine eklenir.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel mt-4">
+  <div class="panel-header"><h2>Son Keşifler</h2><span>Discovery geçmişi</span></div>
+  <div class="table-responsive">
+    <table class="table table-dark table-hover align-middle noc-table">
+      <thead><tr><th>Firma</th><th>Lokasyon</th><th>IP Aralığı</th><th>Durum</th><th>Bulunan</th><th>Aktarılan</th><th>Tarih</th><th></th></tr></thead>
+      <tbody>
+        {% for run in runs %}
+          <tr>
+            <td>{{ run.company.name }}</td>
+            <td>{% if run.location %}{{ run.location.name }}{% else %}-{% endif %}</td>
+            <td>{{ run.cidr }}</td>
+            <td><span class="badge-status {% if run.status == 'completed' %}ok{% elif run.status == 'failed' %}danger{% else %}warn{% endif %}">{{ run.get_status_display }}</span></td>
+            <td>{{ run.found_count }}</td>
+            <td>{{ run.imported_count }}</td>
+            <td>{{ run.created_at|date:'d.m.Y H:i' }}</td>
+            <td><a class="bds-btn ghost sm" href="{% url 'discovery_detail' run.pk %}">Aç</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="text-secondary">Henüz keşif taraması yok.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

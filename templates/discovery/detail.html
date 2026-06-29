@@ -1,0 +1,58 @@
+{% extends 'base/app.html' %}
+{% block title %}Keşif Sonucu{% endblock %}
+{% block page_title %}Keşif Sonucu{% endblock %}
+{% block page_kicker %}{{ run.company.name }} / {{ run.cidr }}{% endblock %}
+{% block content %}
+{% if messages %}
+  <div class="mb-3">
+    {% for message in messages %}<div class="alert alert-info py-2">{{ message }}</div>{% endfor %}
+  </div>
+{% endif %}
+
+<section class="metric-grid mb-4">
+  <div class="metric-card"><span>Bulunan Host</span><strong>{{ run.found_count }}</strong><small>{{ run.cidr }}</small></div>
+  <div class="metric-card ok"><span>Aktarılan</span><strong>{{ run.imported_count }}</strong><small>Varlık listesine eklendi</small></div>
+  <div class="metric-card warn"><span>Durum</span><strong style="font-size:26px">{{ run.get_status_display }}</strong><small>{{ run.created_at|date:'d.m.Y H:i' }}</small></div>
+  <div class="metric-card"><span>Firma</span><strong style="font-size:24px">{{ run.company.short_name|default:run.company.name }}</strong><small>{% if run.location %}{{ run.location.name }}{% else %}Lokasyon yok{% endif %}</small></div>
+  <div class="metric-card"><span>Motor</span><strong style="font-size:24px">TCP</strong><small>Port bazlı tanıma</small></div>
+</section>
+
+<section class="panel">
+  <div class="panel-header">
+    <div><h2>Bulunan Cihazlar</h2><span>Seç, varlık listesine aktar, sonra monitoring başlat.</span></div>
+    <a class="bds-btn ghost sm" href="{% url 'discovery_home' %}">Yeni Tarama</a>
+  </div>
+  <form method="post" action="{% url 'discovery_import' run.pk %}">
+    {% csrf_token %}
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle noc-table">
+        <thead><tr><th style="width:42px"></th><th>IP</th><th>Önerilen Ad</th><th>Tip</th><th>Açık Portlar</th><th>Güven</th><th>Durum</th></tr></thead>
+        <tbody>
+        {% for host in hosts %}
+          <tr>
+            <td>{% if not host.imported_device %}<input type="checkbox" class="form-check-input" name="hosts" value="{{ host.id }}" checked>{% endif %}</td>
+            <td><strong>{{ host.ip_address }}</strong></td>
+            <td>{{ host.suggested_name|default:host.hostname|default:'-' }}</td>
+            <td><span class="badge-status ok">{{ host.get_suggested_type_display }}</span></td>
+            <td>{% for p in host.open_ports %}<span class="port-pill">{{ p }}</span>{% empty %}-{% endfor %}</td>
+            <td>{{ host.confidence }}%</td>
+            <td>
+              {% if host.imported_device %}
+                <span class="badge-status ok">Aktarıldı</span>
+              {% else %}
+                <span class="badge-status warn">Bekliyor</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" class="text-secondary">Cihaz bulunamadı. IP aralığını veya ağ erişimini kontrol et.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-content-end mt-3">
+      <button class="bds-btn primary" type="submit">Seçilenleri Varlığa Aktar</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
